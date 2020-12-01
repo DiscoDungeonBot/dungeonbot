@@ -1,8 +1,11 @@
+from re import sub
 import discord
 from discord.ext import commands
 import rolldice
 import logging
 from random import Random
+
+logger = logging.getLogger(__name__)
 
 brief = '.splash <substance>'
 description = '''Calculate the splash damage of a thrown substance.
@@ -60,7 +63,9 @@ class Splash(commands.Cog):
 
     @commands.command(brief=brief, description=description)
     async def splash(self, ctx, *, substance):
+        logger.info(f'splash {substance}')
         message = self.handle_splash(substance)
+        logger.info(f'splash result: {message}')
         await ctx.send(message)
 
     @splash.error

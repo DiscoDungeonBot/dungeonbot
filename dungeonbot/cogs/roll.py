@@ -2,8 +2,6 @@ from discord.ext import commands
 import rolldice
 import logging
 
-from prometheus_client import Counter
-
 brief = 'dice. Example: .roll 1d6 or .roll 2d20+1'
 description = '''Roll dice with .roll or .r and dice notation. Examples:
 
@@ -16,26 +14,29 @@ description = '''Roll dice with .roll or .r and dice notation. Examples:
 .r 100d6k99: Roll 100d6 and keep all but the highest.
 '''
 
-dice_roll_counter = Counter('dice_rolls', 'Counts the dice rolls')
+logger = logging.getLogger(__name__)
 
 class Roll(commands.Cog):
+
 
     def __init__(self, client):
         self.client = client
 
     @commands.command(aliases=['r'], brief=brief, description=description)
     async def roll(self, ctx, *, rollvalue):
-    # Parse the roll into number of dice and sides on the dice
-        dice_roll_counter.inc()
+        try:
+        # Parse the roll into number of dice and sides on the dice
+            logger.info(f'Rolling "{rollvalue}"')
+            result, explanation = rolldice.roll_dice(rollvalue)
+            logger.info(f'Result: {result}')
 
-        logging.info(f'Rolling {rollvalue}')
-        result, explanation = rolldice.roll_dice(rollvalue)
-        logging.info(f'Result: {result}')
+            if rollvalue[0] > '1':
+                await ctx.send(f':game_die: {ctx.author.name} rolls... **{result}**! ... with these dice: {explanation} :game_die:')
+            else:
+                await ctx.send(f':game_die: {ctx.author.name} rolls... **{result}**! :game_die:')
 
-        if rollvalue[0] > '1':
-            await ctx.send(f':game_die: {ctx.author.name} rolls... **{result}**! ... with these dice: {explanation} :game_die:')
-        else:
-            await ctx.send(f':game_die: {ctx.author.name} rolls... **{result}**! :game_die:')
+        except Exception as e:
+            logger.exception(e)
 
     @roll.error
     async def roll_error(self, ctx, error):
