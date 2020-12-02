@@ -1,6 +1,5 @@
 import logging
 
-from prometheus_client import start_http_server
 from discord.ext import commands
 
 from .cogs.char import Char
@@ -31,5 +30,4 @@ class DungeonBot:
       logger.info(f"We have logged in as {self.bot.user}")
 
   def run(self, token:str):
-    start_http_server(8000)
     self.bot.run(token)
